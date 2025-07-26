@@ -1,10 +1,8 @@
-import { Configuration, OpenAIApi } from 'openai';
+const OpenAI = require('openai');
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-
-const openai = new OpenAIApi(configuration);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -18,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
         {
@@ -29,10 +27,10 @@ export default async function handler(req, res) {
       temperature: 0.7,
     });
 
-    const result = completion.data.choices[0].message.content;
+    const result = completion.choices[0].message.content;
     res.status(200).json({ result });
   } catch (error) {
-    console.error('🔴 GPT API Error:', error.response?.data || error.message);
-    res.status(500).json({ error: error.response?.data || error.message || 'Internal server error' });
+    console.error('🔴 GPT API Error:', error.message || error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
   }
 }
