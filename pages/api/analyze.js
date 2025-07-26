@@ -1,4 +1,3 @@
-
 import { Configuration, OpenAIApi } from 'openai';
 
 const configuration = new Configuration({
@@ -14,13 +13,17 @@ export default async function handler(req, res) {
 
   const { input } = req.body;
 
+  if (!input || input.trim() === '') {
+    return res.status(400).json({ error: 'Input text is required.' });
+  }
+
   try {
     const completion = await openai.createChatCompletion({
       model: 'gpt-4',
       messages: [
         {
           role: 'user',
-          content: `Analyze the following content using the Raven Lite framework. Return a structured report with bias, narrative summary, persuasion tactics, fact/opinion breakdown, and source credibility.\n\nContent:\n${input}`,
+          content: `Analyze the following content using the Raven Lite framework. Return a structured report including bias, narrative summary, persuasion tactics, fact/opinion breakdown, and source credibility.\n\nContent:\n${input}`,
         },
       ],
       temperature: 0.7,
@@ -29,8 +32,7 @@ export default async function handler(req, res) {
     const result = completion.data.choices[0].message.content;
     res.status(200).json({ result });
   } catch (error) {
-    console.error(error.response?.data || error.message);
-    res.status(500).json({ error: 'Analysis failed' });
+    console.error('🔴 GPT API Error:', error.response?.data || error.message);
+    res.status(500).json({ error: error.response?.data || error.message || 'Internal server error' });
   }
 }
-    
